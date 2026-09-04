@@ -637,6 +637,17 @@ Rules:
 * Never silently delete production data.
 * Test migrations before deployment.
 
+### Initial Migration
+
+The first backend migration creates only the user and portfolio foundation:
+
+```text
+users
+portfolios
+```
+
+This initial schema uses UUID primary keys, a single `users.name` field, unique user emails, unique portfolio usernames, a required portfolio owner foreign key, and `created_at` / `updated_at` timestamps. Remaining profile fields and portfolio section tables are intentionally deferred to later feature phases.
+
 ---
 
 # 26. Data Integrity

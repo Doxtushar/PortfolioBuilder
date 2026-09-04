@@ -8,7 +8,12 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "db:migrate": "node-pg-migrate up --envPath .env --migrations-dir migrations --migrations-table schema_migrations --database-url-var DATABASE_URL",
+    "db:rollback": "node-pg-migrate down --envPath .env --migrations-dir migrations --migrations-table schema_migrations --database-url-var DATABASE_URL",
+    "db:redo": "node-pg-migrate redo --envPath .env --migrations-dir migrations --migrations-table schema_migrations --database-url-var DATABASE_URL",
+    "db:create": "node-pg-migrate create --migrations-dir migrations --migration-file-language js --migration-filename-format utc",
+    "db:status": "node scripts/db-status.mjs"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +32,7 @@
     "@types/node": "^26.4.1",
     "@types/pg": "^8.23.1",
     "eslint": "^10.9.1",
+    "node-pg-migrate": "^9.0.0",
     "tsx": "^4.23.13",
     "typescript": "~6.0.0",
     "typescript-eslint": "^8.69.0"
