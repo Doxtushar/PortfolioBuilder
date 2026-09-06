@@ -8,7 +8,7 @@ import {
   isUniqueViolation,
   type AuthRepository,
 } from "../repositories/authRepository.js";
-import type { LoginUserInput, LoginResult, RegisterUserInput, RegistrationResult } from "../types/auth.js";
+import type { CurrentUser, LoginUserInput, LoginResult, RegisterUserInput, RegistrationResult } from "../types/auth.js";
 import { AppError } from "../utils/AppError.js";
 import { createUsernameBase, createUsernameCandidate } from "../utils/slug.js";
 
@@ -128,6 +128,20 @@ export const createAuthService = ({
         createdAt: user.createdAt.toISOString(),
       },
       token,
+    };
+  },
+
+  async getCurrentUser(userId: string): Promise<CurrentUser> {
+    const user = await repository.findUserById(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 401, "USER_NOT_FOUND");
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
     };
   },
 });

@@ -32,3 +32,9 @@ export type LoginResult = {
   user: SafeUser;
   token: string;
 };
+
+export type CurrentUser = {
+  id: string;
+  name: string;
+  email: string;
+};
