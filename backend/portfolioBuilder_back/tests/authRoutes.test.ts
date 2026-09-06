@@ -42,3 +42,31 @@ describe("POST /api/v1/auth/register", () => {
     assert.equal(response.body.code, "INVALID_JSON");
   });
 });
+
+describe("POST /api/v1/auth/login", () => {
+  it("rejects invalid input with the API error contract", async () => {
+    const response = await request(createTestApp())
+      .post("/api/v1/auth/login")
+      .send({
+        email: "not-email",
+        password: "",
+      });
+
+    assert.equal(response.status, 422);
+    assert.equal(response.body.success, false);
+    assert.equal(response.body.data, null);
+    assert.equal(response.body.code, "VALIDATION_ERROR");
+  });
+
+  it("rejects malformed JSON with the API error contract", async () => {
+    const response = await request(createTestApp())
+      .post("/api/v1/auth/login")
+      .set("Content-Type", "application/json")
+      .send("{not-json");
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.success, false);
+    assert.equal(response.body.data, null);
+    assert.equal(response.body.code, "INVALID_JSON");
+  });
+});

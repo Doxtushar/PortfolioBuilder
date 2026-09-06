@@ -4,6 +4,11 @@ export type RegisterUserInput = {
   password: string;
 };
 
+export type LoginUserInput = {
+  email: string;
+  password: string;
+};
+
 export type SafeUser = {
   id: string;
   name: string;
@@ -21,4 +26,9 @@ export type InitialPortfolio = {
 export type RegistrationResult = {
   user: SafeUser;
   portfolio: InitialPortfolio;
+};
+
+export type LoginResult = {
+  user: SafeUser;
+  token: string;
 };

@@ -1,5 +1,5 @@
 import { AppError } from "../utils/AppError.js";
-import type { RegisterUserInput } from "../types/auth.js";
+import type { LoginUserInput, RegisterUserInput } from "../types/auth.js";
 
 const MIN_PASSWORD_LENGTH = 12;
 
@@ -42,4 +42,24 @@ export const validateRegisterInput = (body: unknown): RegisterUserInput => {
   }
 
   return { name, email, password };
+};
+
+export const validateLoginInput = (body: unknown): LoginUserInput => {
+  if (!isRecord(body)) {
+    throw new AppError("Request body must be a JSON object", 422, "VALIDATION_ERROR");
+  }
+
+  const email =
+    typeof body.email === "string" ? normalizeEmail(body.email) : "";
+  const password = typeof body.password === "string" ? body.password : "";
+
+  if (!email || !isValidEmail(email)) {
+    throw new AppError("A valid email is required", 422, "VALIDATION_ERROR");
+  }
+
+  if (!password) {
+    throw new AppError("Password is required", 422, "VALIDATION_ERROR");
+  }
+
+  return { email, password };
 };

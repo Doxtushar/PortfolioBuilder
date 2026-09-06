@@ -1,12 +1,14 @@
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
+import { env } from "../config/env.js";
 import {
   authRepository,
   getConstraintName,
   isUniqueViolation,
   type AuthRepository,
 } from "../repositories/authRepository.js";
-import type { RegisterUserInput, RegistrationResult } from "../types/auth.js";
+import type { LoginUserInput, LoginResult, RegisterUserInput, RegistrationResult } from "../types/auth.js";
 import { AppError } from "../utils/AppError.js";
 import { createUsernameBase, createUsernameCandidate } from "../utils/slug.js";
 
@@ -93,6 +95,40 @@ export const createAuthService = ({
 
       throw error;
     }
+  },
+
+  async loginUser(input: LoginUserInput): Promise<LoginResult> {
+    if (!env.jwtSecret) {
+      throw new AppError("JWT secret is not configured", 500, "JWT_SECRET_NOT_CONFIGURED");
+    }
+
+    const user = await repository.findUserByEmail(input.email);
+
+    if (!user) {
+      throw new AppError("Invalid email or password", 401, "INVALID_CREDENTIALS");
+    }
+
+    const isValidPassword = await bcrypt.compare(input.password, user.passwordHash);
+
+    if (!isValidPassword) {
+      throw new AppError("Invalid email or password", 401, "INVALID_CREDENTIALS");
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      env.jwtSecret,
+      { expiresIn: env.jwtExpiresIn } as jwt.SignOptions,
+    );
+
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt.toISOString(),
+      },
+      token,
+    };
   },
 });
 

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import bcrypt from "bcryptjs";
 
 import {
   createAuthService,
@@ -13,6 +14,7 @@ import type {
   UserRecord,
 } from "../src/repositories/authRepository.js";
 import { AppError } from "../src/utils/AppError.js";
+import { env } from "../src/config/env.js";
 
 const now = new Date("2026-09-05T00:00:00.000Z");
 
@@ -20,6 +22,7 @@ const createUserRecord = (input: NewUserRecord): UserRecord => ({
   id: "user-1",
   name: input.name,
   email: input.email,
+  passwordHash: input.passwordHash,
   createdAt: now,
 });
 
@@ -190,5 +193,144 @@ describe("authService.registerUser", () => {
         }),
       transactionError,
     );
+  });
+});
+
+describe("authService.loginUser", () => {
+  it("returns a token and user data for valid credentials", async () => {
+    const originalJwtSecret = env.jwtSecret;
+    env.jwtSecret = "test-secret";
+
+    const repository: AuthRepository = {
+      async withRegistrationTransaction() {
+        throw new Error("Not used in login");
+      },
+      async findUserByEmail(email) {
+        if (email === "john@example.com") {
+          return {
+            id: "user-1",
+            name: "John Doe",
+            email: "john@example.com",
+            passwordHash: await bcrypt.hash("SecurePassword123", 12),
+            createdAt: now,
+          };
+        }
+        return null;
+      },
+    };
+
+    const service = createAuthService({ repository });
+    const result = await service.loginUser({
+      email: "john@example.com",
+      password: "SecurePassword123",
+    });
+
+    assert.equal(result.user.email, "john@example.com");
+    assert.equal(result.user.name, "John Doe");
+    assert.equal(typeof result.token, "string");
+    assert.equal(result.token.length > 0, true);
+    assert.equal("password" in result.user, false);
+    assert.equal("passwordHash" in result.user, false);
+
+    env.jwtSecret = originalJwtSecret;
+  });
+
+  it("rejects login with non-existent email", async () => {
+    const originalJwtSecret = env.jwtSecret;
+    env.jwtSecret = "test-secret";
+
+    const repository: AuthRepository = {
+      async withRegistrationTransaction() {
+        throw new Error("Not used in login");
+      },
+      async findUserByEmail() {
+        return null;
+      },
+    };
+
+    const service = createAuthService({ repository });
+
+    await assert.rejects(
+      () =>
+        service.loginUser({
+          email: "nonexistent@example.com",
+          password: "SecurePassword123",
+        }),
+      (error) =>
+        error instanceof AppError &&
+        error.statusCode === 401 &&
+        error.code === "INVALID_CREDENTIALS",
+    );
+
+    env.jwtSecret = originalJwtSecret;
+  });
+
+  it("rejects login with incorrect password", async () => {
+    const originalJwtSecret = env.jwtSecret;
+    env.jwtSecret = "test-secret";
+
+    const repository: AuthRepository = {
+      async withRegistrationTransaction() {
+        throw new Error("Not used in login");
+      },
+      async findUserByEmail(email) {
+        if (email === "john@example.com") {
+          return {
+            id: "user-1",
+            name: "John Doe",
+            email: "john@example.com",
+            passwordHash: await bcrypt.hash("CorrectPassword123", 12),
+            createdAt: now,
+          };
+        }
+        return null;
+      },
+    };
+
+    const service = createAuthService({ repository });
+
+    await assert.rejects(
+      () =>
+        service.loginUser({
+          email: "john@example.com",
+          password: "WrongPassword123",
+        }),
+      (error) =>
+        error instanceof AppError &&
+        error.statusCode === 401 &&
+        error.code === "INVALID_CREDENTIALS",
+    );
+
+    env.jwtSecret = originalJwtSecret;
+  });
+
+  it("throws error when JWT secret is not configured", async () => {
+    const originalJwtSecret = env.jwtSecret;
+    env.jwtSecret = undefined;
+
+    const repository: AuthRepository = {
+      async withRegistrationTransaction() {
+        throw new Error("Not used in login");
+      },
+      async findUserByEmail() {
+        return null;
+      },
+    };
+
+    const service = createAuthService({ repository });
+
+    await assert.rejects(
+      () =>
+        service.loginUser({
+          email: "john@example.com",
+          password: "SecurePassword123",
+        }),
+      (error) =>
+        error instanceof AppError &&
+        error.statusCode === 500 &&
+        error.code === "JWT_SECRET_NOT_CONFIGURED",
+    );
+
+    env.jwtSecret = originalJwtSecret;
   });
 });

@@ -15,6 +15,7 @@ export type UserRecord = {
   id: string;
   name: string;
   email: string;
+  passwordHash: string;
   createdAt: Date;
 };
 
@@ -39,12 +40,14 @@ export type AuthRepository = {
   withRegistrationTransaction<T>(
     callback: (transaction: RegistrationTransaction) => Promise<T>,
   ): Promise<T>;
+  findUserByEmail(email: string): Promise<UserRecord | null>;
 };
 
 const mapUser = (row: QueryResultRow): UserRecord => ({
   id: String(row.id),
   name: String(row.name),
   email: String(row.email),
+  passwordHash: String(row.password_hash),
   createdAt: new Date(String(row.created_at)),
 });
 
@@ -111,6 +114,27 @@ export const authRepository: AuthRepository = {
     } finally {
       client.release();
     }
+  },
+
+  async findUserByEmail(email) {
+    if (!pool) {
+      throw new AppError("Database is not configured", 503, "DATABASE_NOT_CONFIGURED");
+    }
+
+    const result = await pool.query(
+      `
+        SELECT id, name, email, password_hash, created_at
+        FROM users
+        WHERE email = $1
+      `,
+      [email],
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    return mapUser(result.rows[0]);
   },
 };
 
