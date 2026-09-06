@@ -126,7 +126,9 @@
 
 .dashboard-welcome p:not(.dashboard-eyebrow),
 .portfolio-section-heading p,
-.portfolio-empty-state p {
+.portfolio-empty-state p,
+.portfolio-status-state p,
+.portfolio-summary-list dd {
   color: var(--text);
 }
 
@@ -189,6 +191,65 @@
   max-width: 440px;
 }
 
+.portfolio-status-state,
+.portfolio-summary {
+  padding: 40px 32px;
+}
+
+.portfolio-status-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.portfolio-status-state h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.portfolio-retry-button {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-h);
+  background: var(--bg);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.portfolio-retry-button:hover,
+.portfolio-retry-button:focus-visible {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.portfolio-summary-list {
+  display: grid;
+  gap: 20px;
+  margin: 0;
+}
+
+.portfolio-summary-list > div {
+  display: grid;
+  gap: 6px;
+}
+
+.portfolio-summary-list dt {
+  color: var(--text-h);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.portfolio-summary-list dd {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
 @media (max-width: 640px) {
   .dashboard-navbar {
     align-items: flex-start;
@@ -219,6 +280,11 @@
     align-items: flex-start;
     flex-direction: column;
     padding: 24px;
+  }
+
+  .portfolio-status-state,
+  .portfolio-summary {
+    padding: 32px 24px;
   }
 
   .create-portfolio-button {
