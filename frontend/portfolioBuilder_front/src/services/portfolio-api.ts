@@ -3,6 +3,12 @@ import { apiClient } from '../lib/api-client';
 import type { ApiResponse } from '../types/auth';
 import type { Portfolio } from '../types/portfolio';
 
+export type PortfolioInput = {
+  username: string;
+  title: string;
+  bio: string | null;
+};
+
 export const portfolioApi = {
   async getPortfolio(): Promise<Portfolio | null> {
     try {
@@ -14,5 +20,15 @@ export const portfolioApi = {
       }
       throw error;
     }
+  },
+
+  async createPortfolio(input: PortfolioInput): Promise<Portfolio> {
+    const response = await apiClient.instance.post<ApiResponse<Portfolio>>('/portfolio', input);
+    return response.data.data;
+  },
+
+  async updatePortfolio(input: PortfolioInput): Promise<Portfolio> {
+    const response = await apiClient.instance.put<ApiResponse<Portfolio>>('/portfolio', input);
+    return response.data.data;
   },
 };

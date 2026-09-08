@@ -1,9 +1,11 @@
-import { BriefcaseBusiness, LogOut, Plus, UserRound } from 'lucide-react';
+import { BriefcaseBusiness, LogOut, Plus, UserRound, Edit } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { portfolioApi } from '../services/portfolio-api';
+import { useAuth } from '../contexts/AuthContext.js';
+import { portfolioApi } from '../services/portfolio-api.js';
+import { PortfolioForm } from '../components/PortfolioForm.js';
+import { useState } from 'react';
 import './dashboard.css';
 
 function getPortfolioErrorMessage(error: unknown): string {
@@ -24,6 +26,7 @@ function getPortfolioErrorMessage(error: unknown): string {
 export function Dashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [showPortfolioForm, setShowPortfolioForm] = useState(false);
 
   const {
     data: portfolio,
@@ -88,9 +91,15 @@ export function Dashboard() {
               </p>
             </div>
             {!portfolio && !isPortfolioLoading && !isPortfolioError && (
-              <button type="button" className="create-portfolio-button" disabled>
+              <button type="button" className="create-portfolio-button" onClick={() => setShowPortfolioForm(true)}>
                 <Plus size={18} aria-hidden="true" />
                 Create Portfolio
+              </button>
+            )}
+            {portfolio && !isPortfolioLoading && !isPortfolioError && (
+              <button type="button" className="create-portfolio-button" onClick={() => setShowPortfolioForm(true)}>
+                <Edit size={18} aria-hidden="true" />
+                Edit Portfolio
               </button>
             )}
           </div>
@@ -143,6 +152,10 @@ export function Dashboard() {
           )}
         </section>
       </main>
+
+      {showPortfolioForm && (
+        <PortfolioForm portfolio={portfolio} onClose={() => setShowPortfolioForm(false)} />
+      )}
     </div>
   );
 }
