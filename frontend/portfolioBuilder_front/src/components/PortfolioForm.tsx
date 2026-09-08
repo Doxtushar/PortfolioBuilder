@@ -31,6 +31,11 @@ export function PortfolioForm({ portfolio, onClose }: PortfolioFormProps) {
   const [username, setUsername] = useState(portfolio?.username || '');
   const [title, setTitle] = useState(portfolio?.title || '');
   const [bio, setBio] = useState(portfolio?.bio || '');
+  const [fullName, setFullName] = useState(portfolio?.fullName || '');
+  const [headline, setHeadline] = useState(portfolio?.headline || '');
+  const [location, setLocation] = useState(portfolio?.location || '');
+  const [introduction, setIntroduction] = useState(portfolio?.introduction || '');
+  const [profileImageUrl, setProfileImageUrl] = useState(portfolio?.profileImageUrl || '');
   const [formError, setFormError] = useState('');
 
   useEffect(() => {
@@ -38,10 +43,20 @@ export function PortfolioForm({ portfolio, onClose }: PortfolioFormProps) {
       setUsername(portfolio.username);
       setTitle(portfolio.title);
       setBio(portfolio.bio || '');
+      setFullName(portfolio.fullName || '');
+      setHeadline(portfolio.headline || '');
+      setLocation(portfolio.location || '');
+      setIntroduction(portfolio.introduction || '');
+      setProfileImageUrl(portfolio.profileImageUrl || '');
     } else {
       setUsername('');
       setTitle('');
       setBio('');
+      setFullName('');
+      setHeadline('');
+      setLocation('');
+      setIntroduction('');
+      setProfileImageUrl('');
     }
   }, [portfolio]);
 
@@ -86,6 +101,22 @@ export function PortfolioForm({ portfolio, onClose }: PortfolioFormProps) {
       title: title.trim(),
       bio: bio.trim() || null,
     };
+
+    if (fullName.trim()) {
+      input.fullName = fullName.trim();
+    }
+    if (headline.trim()) {
+      input.headline = headline.trim();
+    }
+    if (location.trim()) {
+      input.location = location.trim();
+    }
+    if (introduction.trim()) {
+      input.introduction = introduction.trim();
+    }
+    if (profileImageUrl.trim()) {
+      input.profileImageUrl = profileImageUrl.trim();
+    }
 
     if (isEditing) {
       await updateMutation.mutateAsync(input);
@@ -142,6 +173,70 @@ export function PortfolioForm({ portfolio, onClose }: PortfolioFormProps) {
               placeholder="Tell visitors about yourself..."
               disabled={isLoading}
               rows={4}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="fullName">Full Name</label>
+            <input
+              id="fullName"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="John Doe"
+              disabled={isLoading}
+              autoComplete="name"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="headline">Professional Headline</label>
+            <input
+              id="headline"
+              type="text"
+              value={headline}
+              onChange={(e) => setHeadline(e.target.value)}
+              placeholder="Software Developer"
+              disabled={isLoading}
+              autoComplete="organization-title"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="location">Location</label>
+            <input
+              id="location"
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="San Francisco, CA"
+              disabled={isLoading}
+              autoComplete="address-level2"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="introduction">Introduction</label>
+            <textarea
+              id="introduction"
+              value={introduction}
+              onChange={(e) => setIntroduction(e.target.value)}
+              placeholder="A brief introduction about your professional background..."
+              disabled={isLoading}
+              rows={4}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="profileImageUrl">Profile Image URL</label>
+            <input
+              id="profileImageUrl"
+              type="url"
+              value={profileImageUrl}
+              onChange={(e) => setProfileImageUrl(e.target.value)}
+              placeholder="https://example.com/profile.jpg"
+              disabled={isLoading}
+              autoComplete="photo"
             />
           </div>
 

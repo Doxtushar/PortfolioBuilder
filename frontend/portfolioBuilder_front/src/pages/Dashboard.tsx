@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, LogOut, Plus, UserRound, Edit } from 'lucide-react';
+import { BriefcaseBusiness, LogOut, Plus, UserRound, Edit, MapPin } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -131,30 +131,68 @@ export function Dashboard() {
           )}
 
           {!isPortfolioLoading && !isPortfolioError && portfolio && (
-            <div className="portfolio-summary">
-              <dl className="portfolio-summary-list">
-                <div>
-                  <dt>Title</dt>
-                  <dd>{portfolio.title}</dd>
-                </div>
-                <div>
-                  <dt>Username</dt>
-                  <dd>@{portfolio.username}</dd>
-                </div>
-                {portfolio.bio && (
-                  <div>
-                    <dt>Bio</dt>
-                    <dd>{portfolio.bio}</dd>
+            <div className="portfolio-profile-card">
+              <div className="profile-header">
+                {portfolio.profileImageUrl ? (
+                  <img
+                    src={portfolio.profileImageUrl}
+                    alt={`${portfolio.fullName || portfolio.username} profile`}
+                    className="profile-avatar"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) {
+                        fallback.classList.remove('hidden');
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="profile-avatar-fallback">
+                    <UserRound size={32} />
                   </div>
                 )}
-              </dl>
+                {portfolio.profileImageUrl && (
+                  <div className="profile-avatar-fallback hidden">
+                    <UserRound size={32} />
+                  </div>
+                )}
+                <div className="profile-info">
+                  {portfolio.fullName && <h3 className="profile-name">{portfolio.fullName}</h3>}
+                  {portfolio.headline && <p className="profile-headline">{portfolio.headline}</p>}
+                  <div className="profile-meta">
+                    <span className="profile-username">@{portfolio.username}</span>
+                    {portfolio.location && (
+                      <span className="profile-location">
+                        <MapPin size={14} />
+                        {portfolio.location}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {(portfolio.introduction || portfolio.bio) && (
+                <div className="profile-body">
+                  {portfolio.introduction && (
+                    <div className="profile-section">
+                      <h4 className="profile-section-title">Introduction</h4>
+                      <p className="profile-section-content">{portfolio.introduction}</p>
+                    </div>
+                  )}
+                  {portfolio.bio && (
+                    <div className="profile-section">
+                      <h4 className="profile-section-title">Bio</h4>
+                      <p className="profile-section-content">{portfolio.bio}</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </section>
       </main>
 
       {showPortfolioForm && (
-        <PortfolioForm portfolio={portfolio} onClose={() => setShowPortfolioForm(false)} />
+        <PortfolioForm portfolio={portfolio ?? null} onClose={() => setShowPortfolioForm(false)} />
       )}
     </div>
   );
