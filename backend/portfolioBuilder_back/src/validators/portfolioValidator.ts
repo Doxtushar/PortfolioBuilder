@@ -21,7 +21,25 @@ const validatePortfolioInput = (body: unknown): CreatePortfolioInput => {
     throw new AppError("Title is required", 422, "VALIDATION_ERROR");
   }
 
-  return { username, title, bio };
+  const result: CreatePortfolioInput = { username, title, bio };
+
+  if (typeof body.fullName === "string" && body.fullName.trim()) {
+    result.fullName = body.fullName.trim();
+  }
+  if (typeof body.headline === "string" && body.headline.trim()) {
+    result.headline = body.headline.trim();
+  }
+  if (typeof body.location === "string" && body.location.trim()) {
+    result.location = body.location.trim();
+  }
+  if (typeof body.introduction === "string" && body.introduction.trim()) {
+    result.introduction = body.introduction.trim();
+  }
+  if (typeof body.profileImageUrl === "string" && body.profileImageUrl.trim()) {
+    result.profileImageUrl = body.profileImageUrl.trim();
+  }
+
+  return result;
 };
 
 export const validateCreatePortfolioInput = (body: unknown): CreatePortfolioInput =>

@@ -9,6 +9,11 @@ export type PortfolioRecord = {
   username: string;
   title: string;
   bio: string | null;
+  fullName: string | null;
+  headline: string | null;
+  location: string | null;
+  introduction: string | null;
+  profileImageUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -24,6 +29,11 @@ const mapPortfolio = (row: QueryResultRow): PortfolioRecord => ({
   username: String(row.username),
   title: String(row.title),
   bio: row.bio === null ? null : String(row.bio),
+  fullName: row.full_name === null ? null : String(row.full_name),
+  headline: row.headline === null ? null : String(row.headline),
+  location: row.location === null ? null : String(row.location),
+  introduction: row.introduction === null ? null : String(row.introduction),
+  profileImageUrl: row.profile_image_url === null ? null : String(row.profile_image_url),
   createdAt: new Date(String(row.created_at)),
   updatedAt: new Date(String(row.updated_at)),
 });
@@ -40,11 +50,21 @@ export const portfolioRepository: PortfolioRepository = {
   async create(userId, input) {
     const result = await requirePool().query(
       `
-        INSERT INTO portfolios (user_id, username, title, bio)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id, username, title, bio, created_at, updated_at
+        INSERT INTO portfolios (user_id, username, title, bio, full_name, headline, location, introduction, profile_image_url)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING id, username, title, bio, full_name, headline, location, introduction, profile_image_url, created_at, updated_at
       `,
-      [userId, input.username, input.title, input.bio],
+      [
+        userId,
+        input.username,
+        input.title,
+        input.bio,
+        input.fullName || null,
+        input.headline || null,
+        input.location || null,
+        input.introduction || null,
+        input.profileImageUrl || null,
+      ],
     );
 
     return mapPortfolio(result.rows[0]);
@@ -53,7 +73,7 @@ export const portfolioRepository: PortfolioRepository = {
   async findByUserId(userId) {
     const result = await requirePool().query(
       `
-        SELECT id, username, title, bio, created_at, updated_at
+        SELECT id, username, title, bio, full_name, headline, location, introduction, profile_image_url, created_at, updated_at
         FROM portfolios
         WHERE user_id = $1
       `,
@@ -67,11 +87,21 @@ export const portfolioRepository: PortfolioRepository = {
     const result = await requirePool().query(
       `
         UPDATE portfolios
-        SET username = $2, title = $3, bio = $4, updated_at = now()
+        SET username = $2, title = $3, bio = $4, full_name = $5, headline = $6, location = $7, introduction = $8, profile_image_url = $9, updated_at = now()
         WHERE user_id = $1
-        RETURNING id, username, title, bio, created_at, updated_at
+        RETURNING id, username, title, bio, full_name, headline, location, introduction, profile_image_url, created_at, updated_at
       `,
-      [userId, input.username, input.title, input.bio],
+      [
+        userId,
+        input.username,
+        input.title,
+        input.bio,
+        input.fullName || null,
+        input.headline || null,
+        input.location || null,
+        input.introduction || null,
+        input.profileImageUrl || null,
+      ],
     );
 
     return result.rows.length === 0 ? null : mapPortfolio(result.rows[0]);

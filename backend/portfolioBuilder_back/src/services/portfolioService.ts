@@ -11,6 +11,11 @@ const toPortfolio = (portfolio: Awaited<ReturnType<PortfolioRepository["create"]
   username: portfolio.username,
   title: portfolio.title,
   bio: portfolio.bio,
+  fullName: portfolio.fullName,
+  headline: portfolio.headline,
+  location: portfolio.location,
+  introduction: portfolio.introduction,
+  profileImageUrl: portfolio.profileImageUrl,
   createdAt: portfolio.createdAt.toISOString(),
   updatedAt: portfolio.updatedAt.toISOString(),
 });
