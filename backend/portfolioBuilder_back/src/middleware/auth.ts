@@ -8,6 +8,7 @@ declare module "express" {
   interface Request {
     userId?: string;
     userEmail?: string;
+    portfolioId?: string;
   }
 }
 

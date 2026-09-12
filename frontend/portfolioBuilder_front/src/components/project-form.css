@@ -1,0 +1,46 @@
+.project-form-modal {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-form-header {
+  flex-shrink: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.project-form-close {
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.project-form-close:hover,
+.project-form-close:focus-visible {
+  background: var(--code-bg);
+  color: var(--text-h);
+}
+
+.project-form {
+  overflow-y: auto;
+  flex: 1;
+  padding: 32px;
+}
+
+.project-form-actions {
+  flex-shrink: 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
