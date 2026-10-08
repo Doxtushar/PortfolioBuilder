@@ -1,14 +1,23 @@
-import { BriefcaseBusiness, LogOut, Plus, UserRound, Edit, MapPin, Trash2, ExternalLink, Link } from 'lucide-react';
+import { BriefcaseBusiness, LogOut, Plus, UserRound, Edit, MapPin, Trash2, ExternalLink, Link, Zap, Building2, GraduationCap } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.js';
 import { portfolioApi } from '../services/portfolio-api.js';
 import { projectApi } from '../services/project-api.js';
+import { skillApi } from '../services/skill-api.js';
+import { experienceApi } from '../services/experience-api.js';
+import { educationApi } from '../services/education-api.js';
 import { PortfolioForm } from '../components/PortfolioForm.js';
 import { ProjectForm } from '../components/ProjectForm.js';
+import { SkillForm } from '../components/SkillForm.js';
+import { ExperienceForm } from '../components/ExperienceForm.js';
+import { EducationForm } from '../components/EducationForm.js';
 import { useState } from 'react';
 import './dashboard.css';
+import type { CreateSkillInput } from '../types/skill.js';
+import type { CreateExperienceInput } from '../types/experience.js';
+import type { CreateEducationInput } from '../types/education.js';
 
 function getPortfolioErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
@@ -33,6 +42,15 @@ export function Dashboard() {
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [editingProject, setEditingProject] = useState<string | null>(null);
   const [deleteConfirmProject, setDeleteConfirmProject] = useState<string | null>(null);
+  const [showSkillForm, setShowSkillForm] = useState(false);
+  const [editingSkill, setEditingSkill] = useState<string | null>(null);
+  const [deleteConfirmSkill, setDeleteConfirmSkill] = useState<string | null>(null);
+  const [showExperienceForm, setShowExperienceForm] = useState(false);
+  const [editingExperience, setEditingExperience] = useState<string | null>(null);
+  const [deleteConfirmExperience, setDeleteConfirmExperience] = useState<string | null>(null);
+  const [showEducationForm, setShowEducationForm] = useState(false);
+  const [editingEducation, setEditingEducation] = useState<string | null>(null);
+  const [deleteConfirmEducation, setDeleteConfirmEducation] = useState<string | null>(null);
 
   const {
     data: portfolio,
@@ -56,6 +74,48 @@ export function Dashboard() {
   } = useQuery({
     queryKey: ['projects'],
     queryFn: projectApi.getProjects,
+    retry: false,
+    refetchOnWindowFocus: false,
+    enabled: !!portfolio,
+  });
+
+  const {
+    data: skills = [],
+    isLoading: isSkillsLoading,
+    isError: isSkillsError,
+    error: skillsError,
+    refetch: refetchSkills,
+  } = useQuery({
+    queryKey: ['skills'],
+    queryFn: skillApi.getSkills,
+    retry: false,
+    refetchOnWindowFocus: false,
+    enabled: !!portfolio,
+  });
+
+  const {
+    data: experiences = [],
+    isLoading: isExperiencesLoading,
+    isError: isExperiencesError,
+    error: experiencesError,
+    refetch: refetchExperiences,
+  } = useQuery({
+    queryKey: ['experiences'],
+    queryFn: experienceApi.getExperiences,
+    retry: false,
+    refetchOnWindowFocus: false,
+    enabled: !!portfolio,
+  });
+
+  const {
+    data: education = [],
+    isLoading: isEducationLoading,
+    isError: isEducationError,
+    error: educationError,
+    refetch: refetchEducation,
+  } = useQuery({
+    queryKey: ['education'],
+    queryFn: educationApi.getEducation,
     retry: false,
     refetchOnWindowFocus: false,
     enabled: !!portfolio,
@@ -87,6 +147,84 @@ export function Dashboard() {
     },
   });
 
+  const createSkillMutation = useMutation({
+    mutationFn: skillApi.createSkill,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['skills'] });
+      setShowSkillForm(false);
+    },
+  });
+
+  const updateSkillMutation = useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Parameters<typeof skillApi.updateSkill>[1] }) =>
+      skillApi.updateSkill(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['skills'] });
+      setShowSkillForm(false);
+      setEditingSkill(null);
+    },
+  });
+
+  const deleteSkillMutation = useMutation({
+    mutationFn: skillApi.deleteSkill,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['skills'] });
+      setDeleteConfirmSkill(null);
+    },
+  });
+
+  const createExperienceMutation = useMutation({
+    mutationFn: experienceApi.createExperience,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['experiences'] });
+      setShowExperienceForm(false);
+    },
+  });
+
+  const updateExperienceMutation = useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Parameters<typeof experienceApi.updateExperience>[1] }) =>
+      experienceApi.updateExperience(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['experiences'] });
+      setShowExperienceForm(false);
+      setEditingExperience(null);
+    },
+  });
+
+  const deleteExperienceMutation = useMutation({
+    mutationFn: experienceApi.deleteExperience,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['experiences'] });
+      setDeleteConfirmExperience(null);
+    },
+  });
+
+  const createEducationMutation = useMutation({
+    mutationFn: educationApi.createEducation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['education'] });
+      setShowEducationForm(false);
+    },
+  });
+
+  const updateEducationMutation = useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Parameters<typeof educationApi.updateEducation>[1] }) =>
+      educationApi.updateEducation(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['education'] });
+      setShowEducationForm(false);
+      setEditingEducation(null);
+    },
+  });
+
+  const deleteEducationMutation = useMutation({
+    mutationFn: educationApi.deleteEducation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['education'] });
+      setDeleteConfirmEducation(null);
+    },
+  });
+
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
@@ -94,6 +232,9 @@ export function Dashboard() {
 
   const portfolioErrorMessage = getPortfolioErrorMessage(portfolioError);
   const projectsErrorMessage = getPortfolioErrorMessage(projectsError);
+  const skillsErrorMessage = getPortfolioErrorMessage(skillsError);
+  const experiencesErrorMessage = getPortfolioErrorMessage(experiencesError);
+  const educationErrorMessage = getPortfolioErrorMessage(educationError);
 
   const handleAddProject = () => {
     setEditingProject(null);
@@ -112,6 +253,66 @@ export function Dashboard() {
   const confirmDeleteProject = () => {
     if (deleteConfirmProject) {
       deleteProjectMutation.mutate(deleteConfirmProject);
+    }
+  };
+
+  const handleAddSkill = () => {
+    setEditingSkill(null);
+    setShowSkillForm(true);
+  };
+
+  const handleEditSkill = (skillId: string) => {
+    setEditingSkill(skillId);
+    setShowSkillForm(true);
+  };
+
+  const handleDeleteSkill = (skillId: string) => {
+    setDeleteConfirmSkill(skillId);
+  };
+
+  const confirmDeleteSkill = () => {
+    if (deleteConfirmSkill) {
+      deleteSkillMutation.mutate(deleteConfirmSkill);
+    }
+  };
+
+  const handleAddExperience = () => {
+    setEditingExperience(null);
+    setShowExperienceForm(true);
+  };
+
+  const handleEditExperience = (experienceId: string) => {
+    setEditingExperience(experienceId);
+    setShowExperienceForm(true);
+  };
+
+  const handleDeleteExperience = (experienceId: string) => {
+    setDeleteConfirmExperience(experienceId);
+  };
+
+  const confirmDeleteExperience = () => {
+    if (deleteConfirmExperience) {
+      deleteExperienceMutation.mutate(deleteConfirmExperience);
+    }
+  };
+
+  const handleAddEducation = () => {
+    setEditingEducation(null);
+    setShowEducationForm(true);
+  };
+
+  const handleEditEducation = (educationId: string) => {
+    setEditingEducation(educationId);
+    setShowEducationForm(true);
+  };
+
+  const handleDeleteEducation = (educationId: string) => {
+    setDeleteConfirmEducation(educationId);
+  };
+
+  const confirmDeleteEducation = () => {
+    if (deleteConfirmEducation) {
+      deleteEducationMutation.mutate(deleteConfirmEducation);
     }
   };
 
@@ -366,6 +567,282 @@ export function Dashboard() {
             )}
           </section>
         )}
+
+        {portfolio && (
+          <section className="portfolio-section" aria-labelledby="skills-section-title">
+            <div className="portfolio-section-heading">
+              <div>
+                <h2 id="skills-section-title">Skills</h2>
+                <p>Highlight your technical abilities and expertise.</p>
+              </div>
+              <button
+                type="button"
+                className="create-portfolio-button"
+                onClick={handleAddSkill}
+                disabled={isSkillsLoading}
+              >
+                <Plus size={18} aria-hidden="true" />
+                Add Skill
+              </button>
+            </div>
+
+            {isSkillsLoading && (
+              <div className="portfolio-status-state" role="status" aria-live="polite">
+                <p>Loading skills…</p>
+              </div>
+            )}
+
+            {isSkillsError && (
+              <div className="portfolio-status-state portfolio-error-state" role="alert">
+                <h3>Could not load skills</h3>
+                <p>{skillsErrorMessage}</p>
+                <button type="button" className="portfolio-retry-button" onClick={() => refetchSkills()}>
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {!isSkillsLoading && !isSkillsError && skills.length === 0 && (
+              <div className="portfolio-empty-state">
+                <span className="portfolio-empty-icon" aria-hidden="true">
+                  <Zap size={28} />
+                </span>
+                <h3>No skills yet</h3>
+                <p>Add your first skill to showcase your expertise.</p>
+              </div>
+            )}
+
+            {!isSkillsLoading && !isSkillsError && skills.length > 0 && (
+              <div className="skills-list">
+                {skills.map((skill) => (
+                  <div key={skill.id} className="skill-card">
+                    <div className="skill-header">
+                      <div className="skill-info">
+                        <h3 className="skill-name">{skill.name}</h3>
+                        <span className="skill-category">{skill.category}</span>
+                      </div>
+                      <div className="skill-actions">
+                        <button
+                          type="button"
+                          className="project-action-button"
+                          onClick={() => handleEditSkill(skill.id)}
+                          aria-label={`Edit ${skill.name}`}
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="project-action-button project-delete-button"
+                          onClick={() => handleDeleteSkill(skill.id)}
+                          aria-label={`Delete ${skill.name}`}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    {skill.proficiency !== null && (
+                      <div className="skill-proficiency">
+                        <div className="skill-proficiency-bar">
+                          <div
+                            className="skill-proficiency-fill"
+                            style={{ width: `${skill.proficiency}%` }}
+                          />
+                        </div>
+                        <span className="skill-proficiency-label">{skill.proficiency}%</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {portfolio && (
+          <section className="portfolio-section" aria-labelledby="experiences-section-title">
+            <div className="portfolio-section-heading">
+              <div>
+                <h2 id="experiences-section-title">Work Experience</h2>
+                <p>Showcase your professional journey.</p>
+              </div>
+              <button
+                type="button"
+                className="create-portfolio-button"
+                onClick={handleAddExperience}
+                disabled={isExperiencesLoading}
+              >
+                <Plus size={18} aria-hidden="true" />
+                Add Experience
+              </button>
+            </div>
+
+            {isExperiencesLoading && (
+              <div className="portfolio-status-state" role="status" aria-live="polite">
+                <p>Loading experiences…</p>
+              </div>
+            )}
+
+            {isExperiencesError && (
+              <div className="portfolio-status-state portfolio-error-state" role="alert">
+                <h3>Could not load experiences</h3>
+                <p>{experiencesErrorMessage}</p>
+                <button type="button" className="portfolio-retry-button" onClick={() => refetchExperiences()}>
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {!isExperiencesLoading && !isExperiencesError && experiences.length === 0 && (
+              <div className="portfolio-empty-state">
+                <span className="portfolio-empty-icon" aria-hidden="true">
+                  <Building2 size={28} />
+                </span>
+                <h3>No experience yet</h3>
+                <p>Add your first work experience to showcase your career.</p>
+              </div>
+            )}
+
+            {!isExperiencesLoading && !isExperiencesError && experiences.length > 0 && (
+              <div className="experiences-list">
+                {experiences.map((experience) => (
+                  <div key={experience.id} className="experience-card">
+                    <div className="experience-header">
+                      <div className="experience-info">
+                        <h3 className="experience-company">{experience.companyName}</h3>
+                        <span className="experience-title">{experience.jobTitle}</span>
+                        <div className="experience-dates">
+                          <span>{new Date(experience.startDate).toLocaleDateString()}</span>
+                          <span> – </span>
+                          <span>{experience.isCurrent ? 'Present' : new Date(experience.endDate || '').toLocaleDateString()}</span>
+                        </div>
+                        {experience.location && (
+                          <span className="experience-location">
+                            <MapPin size={14} />
+                            {experience.location}
+                          </span>
+                        )}
+                        {experience.employmentType && (
+                          <span className="experience-type">{experience.employmentType}</span>
+                        )}
+                      </div>
+                      <div className="experience-actions">
+                        <button
+                          type="button"
+                          className="project-action-button"
+                          onClick={() => handleEditExperience(experience.id)}
+                          aria-label={`Edit ${experience.companyName}`}
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="project-action-button project-delete-button"
+                          onClick={() => handleDeleteExperience(experience.id)}
+                          aria-label={`Delete ${experience.companyName}`}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    {experience.description && <p className="experience-description">{experience.description}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {portfolio && (
+          <section className="portfolio-section" aria-labelledby="education-section-title">
+            <div className="portfolio-section-heading">
+              <div>
+                <h2 id="education-section-title">Education</h2>
+                <p>Showcase your academic background.</p>
+              </div>
+              <button
+                type="button"
+                className="create-portfolio-button"
+                onClick={handleAddEducation}
+                disabled={isEducationLoading}
+              >
+                <Plus size={18} aria-hidden="true" />
+                Add Education
+              </button>
+            </div>
+
+            {isEducationLoading && (
+              <div className="portfolio-status-state" role="status" aria-live="polite">
+                <p>Loading education…</p>
+              </div>
+            )}
+
+            {isEducationError && (
+              <div className="portfolio-status-state portfolio-error-state" role="alert">
+                <h3>Could not load education</h3>
+                <p>{educationErrorMessage}</p>
+                <button type="button" className="portfolio-retry-button" onClick={() => refetchEducation()}>
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {!isEducationLoading && !isEducationError && education.length === 0 && (
+              <div className="portfolio-empty-state">
+                <span className="portfolio-empty-icon" aria-hidden="true">
+                  <GraduationCap size={28} />
+                </span>
+                <h3>No education yet</h3>
+                <p>Add your first education to showcase your academic journey.</p>
+              </div>
+            )}
+
+            {!isEducationLoading && !isEducationError && education.length > 0 && (
+              <div className="education-list">
+                {education.map((edu) => (
+                  <div key={edu.id} className="education-card">
+                    <div className="education-header">
+                      <div className="education-info">
+                        <h3 className="education-institution">{edu.institution}</h3>
+                        <span className="education-degree">{edu.degree}</span>
+                        {edu.fieldOfStudy && <span className="education-field">{edu.fieldOfStudy}</span>}
+                        <div className="education-dates">
+                          <span>{new Date(edu.startDate).toLocaleDateString()}</span>
+                          <span> – </span>
+                          <span>{edu.isCurrent ? 'Present' : new Date(edu.endDate || '').toLocaleDateString()}</span>
+                        </div>
+                        {edu.location && (
+                          <span className="education-location">
+                            <MapPin size={14} />
+                            {edu.location}
+                          </span>
+                        )}
+                      </div>
+                      <div className="education-actions">
+                        <button
+                          type="button"
+                          className="project-action-button"
+                          onClick={() => handleEditEducation(edu.id)}
+                          aria-label={`Edit ${edu.institution}`}
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="project-action-button project-delete-button"
+                          onClick={() => handleDeleteEducation(edu.id)}
+                          aria-label={`Delete ${edu.institution}`}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    {edu.description && <p className="education-description">{edu.description}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </main>
 
       {showPortfolioForm && (
@@ -387,6 +864,60 @@ export function Dashboard() {
             }
           }}
           isSubmitting={createProjectMutation.isPending || updateProjectMutation.isPending}
+        />
+      )}
+
+      {showSkillForm && (
+        <SkillForm
+          skill={editingSkill ? skills.find((s) => s.id === editingSkill) || null : null}
+          onClose={() => {
+            setShowSkillForm(false);
+            setEditingSkill(null);
+          }}
+          onSubmit={(input: CreateSkillInput) => {
+            if (editingSkill) {
+              updateSkillMutation.mutate({ id: editingSkill, input });
+            } else {
+              createSkillMutation.mutate(input);
+            }
+          }}
+          isSubmitting={createSkillMutation.isPending || updateSkillMutation.isPending}
+        />
+      )}
+
+      {showExperienceForm && (
+        <ExperienceForm
+          experience={editingExperience ? experiences.find((e) => e.id === editingExperience) || null : null}
+          onClose={() => {
+            setShowExperienceForm(false);
+            setEditingExperience(null);
+          }}
+          onSubmit={(input: CreateExperienceInput) => {
+            if (editingExperience) {
+              updateExperienceMutation.mutate({ id: editingExperience, input });
+            } else {
+              createExperienceMutation.mutate(input);
+            }
+          }}
+          isSubmitting={createExperienceMutation.isPending || updateExperienceMutation.isPending}
+        />
+      )}
+
+      {showEducationForm && (
+        <EducationForm
+          education={editingEducation ? education.find((e) => e.id === editingEducation) || null : null}
+          onClose={() => {
+            setShowEducationForm(false);
+            setEditingEducation(null);
+          }}
+          onSubmit={(input: CreateEducationInput) => {
+            if (editingEducation) {
+              updateEducationMutation.mutate({ id: editingEducation, input });
+            } else {
+              createEducationMutation.mutate(input);
+            }
+          }}
+          isSubmitting={createEducationMutation.isPending || updateEducationMutation.isPending}
         />
       )}
 
@@ -422,6 +953,120 @@ export function Dashboard() {
                 disabled={deleteProjectMutation.isPending}
               >
                 {deleteProjectMutation.isPending ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirmSkill && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirmSkill(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Delete Skill</h3>
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => setDeleteConfirmSkill(null)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete this skill? This action cannot be undone.</p>
+            </div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-button modal-button-secondary"
+                onClick={() => setDeleteConfirmSkill(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="modal-button modal-button-danger"
+                onClick={confirmDeleteSkill}
+                disabled={deleteSkillMutation.isPending}
+              >
+                {deleteSkillMutation.isPending ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirmExperience && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirmExperience(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Delete Experience</h3>
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => setDeleteConfirmExperience(null)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete this experience? This action cannot be undone.</p>
+            </div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-button modal-button-secondary"
+                onClick={() => setDeleteConfirmExperience(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="modal-button modal-button-danger"
+                onClick={confirmDeleteExperience}
+                disabled={deleteExperienceMutation.isPending}
+              >
+                {deleteExperienceMutation.isPending ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirmEducation && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirmEducation(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Delete Education</h3>
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => setDeleteConfirmEducation(null)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete this education? This action cannot be undone.</p>
+            </div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-button modal-button-secondary"
+                onClick={() => setDeleteConfirmEducation(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="modal-button modal-button-danger"
+                onClick={confirmDeleteEducation}
+                disabled={deleteEducationMutation.isPending}
+              >
+                {deleteEducationMutation.isPending ? 'Deleting…' : 'Delete'}
               </button>
             </div>
           </div>
