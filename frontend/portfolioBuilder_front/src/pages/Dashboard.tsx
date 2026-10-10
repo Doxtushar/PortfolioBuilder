@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, LogOut, Plus, UserRound, Edit, MapPin, Trash2, ExternalLink, Link, Zap, Building2, GraduationCap } from 'lucide-react';
+import { BriefcaseBusiness, LogOut, Plus, UserRound, Edit, MapPin, Trash2, ExternalLink, Link, Zap, Building2, GraduationCap, Award } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -8,16 +8,19 @@ import { projectApi } from '../services/project-api.js';
 import { skillApi } from '../services/skill-api.js';
 import { experienceApi } from '../services/experience-api.js';
 import { educationApi } from '../services/education-api.js';
+import { certificationApi } from '../services/certification-api.js';
 import { PortfolioForm } from '../components/PortfolioForm.js';
 import { ProjectForm } from '../components/ProjectForm.js';
 import { SkillForm } from '../components/SkillForm.js';
 import { ExperienceForm } from '../components/ExperienceForm.js';
 import { EducationForm } from '../components/EducationForm.js';
+import { CertificationForm } from '../components/CertificationForm.js';
 import { useState } from 'react';
 import './dashboard.css';
 import type { CreateSkillInput } from '../types/skill.js';
 import type { CreateExperienceInput } from '../types/experience.js';
 import type { CreateEducationInput } from '../types/education.js';
+import type { CreateCertificationInput } from '../types/certification.js';
 
 function getPortfolioErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
@@ -51,6 +54,9 @@ export function Dashboard() {
   const [showEducationForm, setShowEducationForm] = useState(false);
   const [editingEducation, setEditingEducation] = useState<string | null>(null);
   const [deleteConfirmEducation, setDeleteConfirmEducation] = useState<string | null>(null);
+  const [showCertificationForm, setShowCertificationForm] = useState(false);
+  const [editingCertification, setEditingCertification] = useState<string | null>(null);
+  const [deleteConfirmCertification, setDeleteConfirmCertification] = useState<string | null>(null);
 
   const {
     data: portfolio,
@@ -116,6 +122,20 @@ export function Dashboard() {
   } = useQuery({
     queryKey: ['education'],
     queryFn: educationApi.getEducation,
+    retry: false,
+    refetchOnWindowFocus: false,
+    enabled: !!portfolio,
+  });
+
+  const {
+    data: certifications = [],
+    isLoading: isCertificationsLoading,
+    isError: isCertificationsError,
+    error: certificationsError,
+    refetch: refetchCertifications,
+  } = useQuery({
+    queryKey: ['certifications'],
+    queryFn: certificationApi.getCertifications,
     retry: false,
     refetchOnWindowFocus: false,
     enabled: !!portfolio,
@@ -225,6 +245,32 @@ export function Dashboard() {
     },
   });
 
+  const createCertificationMutation = useMutation({
+    mutationFn: certificationApi.createCertification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['certifications'] });
+      setShowCertificationForm(false);
+    },
+  });
+
+  const updateCertificationMutation = useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Parameters<typeof certificationApi.updateCertification>[1] }) =>
+      certificationApi.updateCertification(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['certifications'] });
+      setShowCertificationForm(false);
+      setEditingCertification(null);
+    },
+  });
+
+  const deleteCertificationMutation = useMutation({
+    mutationFn: certificationApi.deleteCertification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['certifications'] });
+      setDeleteConfirmCertification(null);
+    },
+  });
+
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
@@ -235,6 +281,7 @@ export function Dashboard() {
   const skillsErrorMessage = getPortfolioErrorMessage(skillsError);
   const experiencesErrorMessage = getPortfolioErrorMessage(experiencesError);
   const educationErrorMessage = getPortfolioErrorMessage(educationError);
+  const certificationsErrorMessage = getPortfolioErrorMessage(certificationsError);
 
   const handleAddProject = () => {
     setEditingProject(null);
@@ -313,6 +360,26 @@ export function Dashboard() {
   const confirmDeleteEducation = () => {
     if (deleteConfirmEducation) {
       deleteEducationMutation.mutate(deleteConfirmEducation);
+    }
+  };
+
+  const handleAddCertification = () => {
+    setEditingCertification(null);
+    setShowCertificationForm(true);
+  };
+
+  const handleEditCertification = (certificationId: string) => {
+    setEditingCertification(certificationId);
+    setShowCertificationForm(true);
+  };
+
+  const handleDeleteCertification = (certificationId: string) => {
+    setDeleteConfirmCertification(certificationId);
+  };
+
+  const confirmDeleteCertification = () => {
+    if (deleteConfirmCertification) {
+      deleteCertificationMutation.mutate(deleteConfirmCertification);
     }
   };
 
@@ -843,6 +910,111 @@ export function Dashboard() {
             )}
           </section>
         )}
+
+        {portfolio && (
+          <section className="portfolio-section" aria-labelledby="certifications-section-title">
+            <div className="portfolio-section-heading">
+              <div>
+                <h2 id="certifications-section-title">Certifications</h2>
+                <p>Showcase your professional certifications.</p>
+              </div>
+              <button
+                type="button"
+                className="create-portfolio-button"
+                onClick={handleAddCertification}
+                disabled={isCertificationsLoading}
+              >
+                <Plus size={18} aria-hidden="true" />
+                Add Certification
+              </button>
+            </div>
+
+            {isCertificationsLoading && (
+              <div className="portfolio-status-state" role="status" aria-live="polite">
+                <p>Loading certifications…</p>
+              </div>
+            )}
+
+            {isCertificationsError && (
+              <div className="portfolio-status-state portfolio-error-state" role="alert">
+                <h3>Could not load certifications</h3>
+                <p>{certificationsErrorMessage}</p>
+                <button type="button" className="portfolio-retry-button" onClick={() => refetchCertifications()}>
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {!isCertificationsLoading && !isCertificationsError && certifications.length === 0 && (
+              <div className="portfolio-empty-state">
+                <span className="portfolio-empty-icon" aria-hidden="true">
+                  <Award size={28} />
+                </span>
+                <h3>No certifications yet</h3>
+                <p>Add your first certification to showcase your professional achievements.</p>
+              </div>
+            )}
+
+            {!isCertificationsLoading && !isCertificationsError && certifications.length > 0 && (
+              <div className="certifications-list">
+                {certifications.map((cert) => (
+                  <div key={cert.id} className="certification-card">
+                    <div className="certification-header">
+                      <div className="certification-info">
+                        <h3 className="certification-name">{cert.name}</h3>
+                        <span className="certification-organization">{cert.issuingOrganization}</span>
+                        {cert.credentialId && (
+                          <span className="certification-credential-id">ID: {cert.credentialId}</span>
+                        )}
+                        <div className="certification-dates">
+                          {cert.issueDate && (
+                            <span>Issued: {new Date(cert.issueDate).toLocaleDateString()}</span>
+                          )}
+                          {cert.expirationDate && (
+                            <>
+                              <span> – </span>
+                              <span>Expires: {new Date(cert.expirationDate).toLocaleDateString()}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="certification-actions">
+                        <button
+                          type="button"
+                          className="project-action-button"
+                          onClick={() => handleEditCertification(cert.id)}
+                          aria-label={`Edit ${cert.name}`}
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="project-action-button project-delete-button"
+                          onClick={() => handleDeleteCertification(cert.id)}
+                          aria-label={`Delete ${cert.name}`}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    {cert.credentialUrl && (
+                      <a
+                        href={cert.credentialUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="certification-credential-link"
+                      >
+                        <ExternalLink size={14} />
+                        View Credential
+                      </a>
+                    )}
+                    {cert.description && <p className="certification-description">{cert.description}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </main>
 
       {showPortfolioForm && (
@@ -918,6 +1090,24 @@ export function Dashboard() {
             }
           }}
           isSubmitting={createEducationMutation.isPending || updateEducationMutation.isPending}
+        />
+      )}
+
+      {showCertificationForm && (
+        <CertificationForm
+          certification={editingCertification ? certifications.find((c) => c.id === editingCertification) || null : null}
+          onClose={() => {
+            setShowCertificationForm(false);
+            setEditingCertification(null);
+          }}
+          onSubmit={(input: CreateCertificationInput) => {
+            if (editingCertification) {
+              updateCertificationMutation.mutate({ id: editingCertification, input });
+            } else {
+              createCertificationMutation.mutate(input);
+            }
+          }}
+          isSubmitting={createCertificationMutation.isPending || updateCertificationMutation.isPending}
         />
       )}
 
@@ -1067,6 +1257,44 @@ export function Dashboard() {
                 disabled={deleteEducationMutation.isPending}
               >
                 {deleteEducationMutation.isPending ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirmCertification && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirmCertification(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Delete Certification</h3>
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => setDeleteConfirmCertification(null)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete this certification? This action cannot be undone.</p>
+            </div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-button modal-button-secondary"
+                onClick={() => setDeleteConfirmCertification(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="modal-button modal-button-danger"
+                onClick={confirmDeleteCertification}
+                disabled={deleteCertificationMutation.isPending}
+              >
+                {deleteCertificationMutation.isPending ? 'Deleting…' : 'Delete'}
               </button>
             </div>
           </div>

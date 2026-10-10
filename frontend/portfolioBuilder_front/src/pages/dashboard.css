@@ -1039,3 +1039,111 @@
   }
 }
 
+.certifications-list {
+  display: grid;
+  gap: 16px;
+  padding: 32px;
+}
+
+.certification-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--bg);
+}
+
+.certification-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.certification-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.certification-name {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.certification-organization {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.certification-credential-id {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  background: var(--code-bg);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.certification-dates {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.certification-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.certification-credential-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.certification-credential-link:hover {
+  text-decoration: underline;
+}
+
+.certification-description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .certifications-list {
+    padding: 24px;
+  }
+
+  .certification-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .certification-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .certification-dates {
+    flex-wrap: wrap;
+  }
+}
+

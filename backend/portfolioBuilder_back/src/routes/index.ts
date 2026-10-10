@@ -7,6 +7,7 @@ import { projectRouter } from "./projectRoutes.js";
 import { skillRouter } from "./skillRoutes.js";
 import { experienceRouter } from "./experienceRoutes.js";
 import { educationRouter } from "./educationRoutes.js";
+import { certificationRouter } from "./certificationRoutes.js";
 
 export const apiRouter = Router();
 
@@ -17,3 +18,4 @@ apiRouter.use(projectRouter);
 apiRouter.use(skillRouter);
 apiRouter.use(experienceRouter);
 apiRouter.use(educationRouter);
+apiRouter.use(certificationRouter);
